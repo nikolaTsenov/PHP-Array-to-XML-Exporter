@@ -1,2 +1,2 @@
-# XML-Universal-Exporter
-PHP Class with methods that get given tree array and export in XML.
+# PHP-Array-to-XML-Exporter
+PHP Library of classes with methods that receive given tree array and export it in XML format.
