@@ -1,82 +1,82 @@
 <?php
-namespace Lib\PHPArrayToXml\DomDocumentBased;
+namespace Lib\PHPArrayToXml\SimpleXmlElementBased;
 
 use Lib\PHPArrayToXml\IArrayToXML;
 use Exception\ArrayToXMLException;
 
 /**
- * ArrayToXML
+ * ArrayToXMLElement
  *
- * Class with three public static methods that export given array to xml file, based on DomDocument PHP class
+ * Class with three public static methods that export given array to xml file, based on SimpleXMLElement PHP class
  *
  * @author nikola.tsenov
  */
-class ArrayToXML implements IArrayToXML
+class ArrayToXMLElement implements IArrayToXML
 {
 	/**
 	 * @author nikola.tsenov
-	 * @param array $xmlArray (see exmpleArray.php in folder examples)
+	 * @param array $xmlArray (see fullExampleArray.php in folder examples)
 	 * @param string $fileName
 	 * @throws ArrayToXMLException
 	 * @return string
 	 */
 	public static function exportToXML($xmlArray, $fileName = null)
 	{
-		$version = $xmlArray['version'] ?? '1.0';
-		$encoding = $xmlArray['encoding'] ?? 'UTF-8';
-		
-		$xml = new \DOMDocument($version, $encoding);
+		$xml = new \SimpleXMLElement('<?xml version="' . ($xmlArray['version'] ?? '1.0') . '" encoding="' . ($xmlArray['encoding'] ?? 'UTF-8') . '" ?><' . $xmlArray['containerTag'] . '></' . $xmlArray['containerTag'] . '>');
 		
 		if (! isset($xmlArray['tags'])) {
 			throw new ArrayToXMLException('No XML tags set!');
 		}
 		
-		self::createXmlStructure($xml, $xml, $xmlArray['tags'], ($xmlArray['commonTagAttributes'] ?? null), $encoding);
+		self::setAttributeValue(($xmlArray['containerTagAttributes'] ?? null), $xml);
 		
-		$xml->formatOutput = true;
+		self::createXmlStructure($xml, $xmlArray['tags'], ($xmlArray['commonTagAttributes'] ?? null), ($xmlArray['encoding'] ?? 'UTF-8'));
 		
-		return $xml->saveXML($fileName);
+		return (is_null($fileName)) ? $xml->asXML() : $xml->asXML($fileName);
 	}
 	
 	/**
 	 * Recursive function that forms the xml structure and assigns unique and common attr-value pairs to tags
-	 * 
+	 *
 	 * @author nikola.tsenov
-	 * @param object $parent
-	 * @param \DOMDocument $xml
+	 * @param \SimpleXMLElement $parent
 	 * @param array $xmlStructureArray
 	 * @param array $commonTags
 	 * @param string $encoding
 	 */
-	protected static function createXmlStructure($parent, \DOMDocument $xml, $xmlStructureArray, $commonTags, $encoding)
+	protected static function createXmlStructure(\SimpleXMLElement $parent, $xmlStructureArray, $commonTags, $encoding)
 	{
 		foreach ($xmlStructureArray AS $tagName => $tagValue) {
-			if (! is_numeric($tagName)) {
-				//prepare unique attribute value pairs
-				$uniqueAttrValPairs = self::prepareAttrValuePairs($tagName, $encoding);
+			$newParent = false;
+			$digIn = false;
+			
+			//prepare unique attribute value pairs
+			$uniqueAttrValPairs = self::prepareAttrValuePairs($tagName, $encoding);
+			
+			if (! is_array($tagValue)) {
+				//bottom tag
+				$newTag = $parent->addChild($uniqueAttrValPairs['tagName'], $tagValue);
+			} else {
+				//middle tag
+				if (! is_numeric($uniqueAttrValPairs['tagName'])) {
+					$newTag = $parent->addChild($uniqueAttrValPairs['tagName']);
+						
+					$newParent = true;
+				}
+			
+				$digIn = true;
+			}
 				
-				//create tag and append it
-				$newTag = $xml->createElement($uniqueAttrValPairs['tagName']);
-				$newTag = $parent->appendChild($newTag);
-				
+			if (isset($newTag)) {
 				//set common attribute value pairs
 				self::setAttributeValue(($commonTags[$uniqueAttrValPairs['tagName']] ?? null), $newTag);
 				
 				//set unique attribute value pairs
 				self::setAttributeValue(($uniqueAttrValPairs['uniquePairs'] ?? null), $newTag);
 			}
-			if (! is_array($tagValue)) {
-				//bottom tag
-				$newTag->nodeValue = $tagValue;
-			} else {
-				//middle tag
-				if (! is_numeric($tagName)) {
-					//self call, $newTag is now parent
-					self::createXmlStructure($newTag, $xml, $tagValue, $commonTags, $encoding);
-				} else {
-					//self call with the same parent
-					self::createXmlStructure($parent, $xml, $tagValue, $commonTags, $encoding);
-				}
+				
+			if ($digIn) {
+				self::createXmlStructure(($newParent ? $newTag : $parent), $tagValue, $commonTags, $encoding);
 			}
 		}
 	}
@@ -94,27 +94,27 @@ class ArrayToXML implements IArrayToXML
 			return ['tagName' => $tagName];
 		} else {
 			$uniqueAttributes = '';
-			
+				
 			for ($count = (mb_strpos($tagName, '(', 0, $encoding) + 1); $count < (mb_strlen($tagName, $encoding) - 1); $count++) {
 				$uniqueAttributes .= $tagName{$count};
 			}
-			
+				
 			$uniqueAttributesPairs = explode(';', $uniqueAttributes);
-			
+				
 			$uniquePairs = [];
 			foreach ($uniqueAttributesPairs AS $pair) {
 				$pairArray = explode(':', $pair);
-				
+	
 				if (count($pairArray) != 2) {
 					throw new ArrayToXMLException('Incorrect Attribute-Value construction, follow pattern(attr1:val1;attr2:val2)!');
 				}
-				
+	
 				$uniquePairs[$pairArray[0]] = $pairArray[1];
 			}
 			
 			return [
-				'uniquePairs' => $uniquePairs,
-				'tagName' => explode('(', $tagName)[0]
+					'uniquePairs' => $uniquePairs,
+					'tagName' => explode('(', $tagName)[0]
 			];
 		}
 	}
@@ -128,46 +128,37 @@ class ArrayToXML implements IArrayToXML
 	 */
 	public static function exportToXMLWithoutAttributes($xmlArray, $fileName = null)
 	{
-		$version = $xmlArray['version'] ?? '1.0';
-		$encoding = $xmlArray['encoding'] ?? 'UTF-8';
-		
-		$xml = new \DOMDocument($version, $encoding);
+		$xml = new \SimpleXMLElement('<?xml version="' . ($xmlArray['version'] ?? '1.0') . '" encoding="' . ($xmlArray['encoding'] ?? 'UTF-8') . '" ?><' . $xmlArray['containerTag'] . '></' . $xmlArray['containerTag'] . '>');
 		
 		if (! isset($xmlArray['tags'])) {
 			throw new ArrayToXMLException('No XML tags set!');
 		}
 		
-		self::createXmlStructureWithoutAttributes($xml, $xml, $xmlArray['tags']);
+		self::createXmlStructureWithoutAttributes($xml, $xmlArray['tags']);
 		
-		$xml->formatOutput = true;
-		
-		return $xml->saveXML($fileName);
+		return (is_null($fileName)) ? $xml->asXML() : $xml->asXML($fileName);
 	}
 	
 	/**
 	 * Recursive function that forms the xml structure (no attr-value pairs to tags)
-	 * 
+	 *
 	 * @author nikola.tsenov
-	 * @param object $parent
-	 * @param \DOMDocument $xml
+	 * @param \SimpleXMLElement $parent
 	 * @param array $xmlStructureArray
 	 */
-	protected static function createXmlStructureWithoutAttributes($parent, \DOMDocument $xml, $xmlStructureArray)
+	protected static function createXmlStructureWithoutAttributes(\SimpleXMLElement $parent, $xmlStructureArray)
 	{
 		foreach ($xmlStructureArray AS $tagName => $tagValue) {
-			if (! is_numeric($tagName)) {
-				$newTag = $xml->createElement($tagName);
-				$newTag = $parent->appendChild($newTag);
-			}
 			if (! is_array($tagValue)) {
 				//bottom tag
-				$newTag->nodeValue = $tagValue;
+				$newTag = $parent->addChild($tagName, $tagValue);
 			} else {
 				//middle tag
 				if (! is_numeric($tagName)) {
-					self::createXmlStructureWithoutAttributes($newTag, $xml, $tagValue);
+					$newTag = $parent->addChild($tagName);
+					self::createXmlStructureWithoutAttributes($newTag, $tagValue);
 				} else {
-					self::createXmlStructureWithoutAttributes($parent, $xml, $tagValue);
+					self::createXmlStructureWithoutAttributes($parent, $tagValue);
 				}
 			}
 		}
@@ -182,10 +173,7 @@ class ArrayToXML implements IArrayToXML
 	 */
 	public static function exportToXMLWithNonUniqueAttributes($xmlArray, $fileName = null)
 	{
-		$version = $xmlArray['version'] ?? '1.0';
-		$encoding = $xmlArray['encoding'] ?? 'UTF-8';
-		
-		$xml = new \DOMDocument($version, $encoding);
+		$xml = new \SimpleXMLElement('<?xml version="' . ($xmlArray['version'] ?? '1.0') . '" encoding="' . ($xmlArray['encoding'] ?? 'UTF-8') . '" ?><' . $xmlArray['containerTag'] . '></' . $xmlArray['containerTag'] . '>');
 		
 		if (! isset($xmlArray['tags'])) {
 			throw new ArrayToXMLException('No XML tags set!');
@@ -194,42 +182,46 @@ class ArrayToXML implements IArrayToXML
 			throw new ArrayToXMLException('No common attributes set!');
 		}
 		
-		self::createXMLStructureWithNonUniqueAttributes($xml, $xml, $xmlArray['tags'], $xmlArray['commonTagAttributes']);
+		self::createXMLStructureWithNonUniqueAttributes($xml, $xmlArray['tags'], $xmlArray['commonTagAttributes']);
 		
-		$xml->formatOutput = true;
-		
-		return $xml->saveXML($fileName);
+		return (is_null($fileName)) ? $xml->asXML() : $xml->asXML($fileName);
 	}
 	
 	/**
 	 * Recursive function that forms the xml structure and assigns to tags all separately declared(in commonTagAttributes key) attr-value pairs
-	 * 
+	 *
 	 * @author nikola.tsenov
-	 * @param object $parent
-	 * @param \DOMDocument $xml
+	 * @param \SimpleXMLElement $parent
 	 * @param array $xmlStructureArray
 	 * @param array $commonTags
 	 */
-	protected static function createXMLStructureWithNonUniqueAttributes($parent, \DOMDocument $xml, $xmlStructureArray, $commonTags)
+	protected static function createXMLStructureWithNonUniqueAttributes(\SimpleXMLElement $parent, $xmlStructureArray, $commonTags)
 	{
 		foreach ($xmlStructureArray AS $tagName => $tagValue) {
-			if (! is_numeric($tagName)) {
-				$newTag = $xml->createElement($tagName);
-				$newTag = $parent->appendChild($newTag);
-				
-				//set attributes
-				self::setAttributeValue(($commonTags[$tagName] ?? null), $newTag);
-			}
+			$newParent = false;
+			$digIn = false;
+			
 			if (! is_array($tagValue)) {
 				//bottom tag
-				$newTag->nodeValue = $tagValue;
+				$newTag = $parent->addChild($tagName, $tagValue);
 			} else {
 				//middle tag
 				if (! is_numeric($tagName)) {
-					self::createXMLStructureWithNonUniqueAttributes($newTag, $xml, $tagValue, $commonTags);
-				} else {
-					self::createXMLStructureWithNonUniqueAttributes($parent, $xml, $tagValue, $commonTags);
+					$newTag = $parent->addChild($tagName);
+					
+					$newParent = true;
 				}
+				
+				$digIn = true;
+			}
+			
+			if (isset($newTag)) {
+				//set attributes
+				self::setAttributeValue(($commonTags[$tagName] ?? null), $newTag);
+			}
+			
+			if ($digIn) {
+				self::createXMLStructureWithNonUniqueAttributes(($newParent ? $newTag : $parent), $tagValue, $commonTags);
 			}
 		}
 	}
@@ -237,19 +229,19 @@ class ArrayToXML implements IArrayToXML
 	/**
 	 * @author nikola.tsenov
 	 * @param array $attrValueArray
-	 * @param \DOMElement $tag
+	 * @param \SimpleXMLElement $tag
 	 * @return boolean
 	 */
-	private static function setAttributeValue($attrValueArray, \DOMElement $tag)
+	private static function setAttributeValue($attrValueArray, \SimpleXMLElement $tag)
 	{
 		$count = 0;
 		if (isset($attrValueArray) && is_array($attrValueArray)) {
 			foreach ($attrValueArray AS $attr => $value) {
-				$tag->setAttribute($attr, $value);
+				$tag->addAttribute($attr, $value);
 				$count++;
 			}
 		}
-		
+	
 		return (bool) $count;
 	}
 }

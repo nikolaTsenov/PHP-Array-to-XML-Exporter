@@ -1,5 +1,7 @@
 <?php
 $xmlArray = [
+		//'containerTag' is required for SimpleXmlElementBased Class
+		'containerTag' => 'data',
 		//'version' not obligatory key (has default value '1.0')
 		'version' => '1.0',
 		//'encoding' not obligatory key (has default value 'utf-8')
