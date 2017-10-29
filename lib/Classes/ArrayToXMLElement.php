@@ -28,9 +28,7 @@ class ArrayToXMLElement implements IArrayToXML
 			throw new ArrayToXMLException('No XML tags set!');
 		}
 		
-		if (isset($xmlArray['containerTagAttributes']) && is_array($xmlArray['containerTagAttributes'])) {
-			self::setAttributeValue($xmlArray['containerTagAttributes'], $xml);
-		}
+		self::setAttributeValue(($xmlArray['containerTagAttributes'] ?? null), $xml);
 		
 		self::createXmlStructure($xml, $xmlArray['tags'], ($xmlArray['commonTagAttributes'] ?? null), ($xmlArray['encoding'] ?? 'UTF-8'));
 		
