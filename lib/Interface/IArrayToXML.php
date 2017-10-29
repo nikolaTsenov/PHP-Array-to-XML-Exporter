@@ -1,14 +1,14 @@
 <?php
-namespace Lib;
+namespace Lib\PHPArrayToXml;
 
 /**
- * IArrayToXMLInterface
+ * IArrayToXML
  *
  * Interface for Array to XML Services
  *
  * @author nikola.tsenov
  */
-interface IArrayToXMLInterface
+interface IArrayToXML
 {
 	/**
 	 * This is the most complete method. It creates xml with tags attr-value pairs, both unique and common.

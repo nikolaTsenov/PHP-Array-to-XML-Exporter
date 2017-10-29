@@ -1,12 +1,12 @@
 <?php
-use Service\ArrayToXMLService AS ArrayToXMLService;
+use Lib\PHPArrayToXml\DomDocumentBased\ArrayToXML AS ArrayToXML;
 use Exception\ArrayToXMLException AS ArrayToXMLException;
 
 // Autoload all classes:
 
 require_once '../lib/Exception/ArrayToXMLException.php';
-require_once '../lib/Interface/IArrayToXMLInterface.php';
-require_once '../lib/Service/ArrayToXMLService.php';
+require_once '../lib/Interface/IArrayToXML.php';
+require_once '../lib/Classes/ArrayToXML.php';
 
 // For errors:
 ini_set('display_errors', 1);
@@ -17,7 +17,7 @@ try {
 	//include example xmlArray
 	include_once '../examples/sample2.php';
 	
-	$xmlContent = ArrayToXMLService::exportToXML($xmlArray);
+	$xmlContent = ArrayToXML::exportToXML($xmlArray);
 	
 	echo '<xmp>' . $xmlContent . '</xmp>';
 } catch(ArrayToXMLException $ex) {

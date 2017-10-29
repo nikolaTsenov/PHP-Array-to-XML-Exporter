@@ -1,23 +1,17 @@
 <?php
-namespace Service;
+namespace Lib\PHPArrayToXml\DomDocumentBased;
 
-/**
- * file contains class ArrayToXMLService
- *
- * @author nikola.tsenov
- */
-
-use Lib\IArrayToXMLInterface;
+use Lib\PHPArrayToXml\IArrayToXML;
 use Exception\ArrayToXMLException;
 
 /**
- * ArrayToXMLService
+ * ArrayToXML
  *
  * Class with three public static methods that export given array to xml file, based on DomDocument PHP class
  *
  * @author nikola.tsenov
  */
-class ArrayToXMLService implements IArrayToXMLInterface
+class ArrayToXML implements IArrayToXML
 {
 	/**
 	 * @author nikola.tsenov

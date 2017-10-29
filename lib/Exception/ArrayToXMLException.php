@@ -2,12 +2,6 @@
 namespace Exception;
 
 /**
- * file contains class ArrayToXMLException
- *
- * @author nikola.tsenov
- */
-
-/**
  * ArrayToXMLException
  *
  * Class for catching array to XML exceptions
