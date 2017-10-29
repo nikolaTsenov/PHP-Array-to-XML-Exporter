@@ -4,8 +4,22 @@ namespace Lib\PHPArrayToXml\SimpleXmlElementBased;
 use Lib\PHPArrayToXml\IArrayToXML;
 use Exception\ArrayToXMLException;
 
+/**
+ * ArrayToXMLElement
+ *
+ * Class with three public static methods that export given array to xml file, based on SimpleXMLElement PHP class
+ *
+ * @author nikola.tsenov
+ */
 class ArrayToXMLElement implements IArrayToXML
 {
+	/**
+	 * @author nikola.tsenov
+	 * @param array $xmlArray (see fullExampleArray.php in folder examples)
+	 * @param string $fileName
+	 * @throws ArrayToXMLException
+	 * @return string
+	 */
 	public static function exportToXML($xmlArray, $fileName = null)
 	{
 		$xml = new \SimpleXMLElement('<?xml version="' . ($xmlArray['version'] ?? '1.0') . '" encoding="' . ($xmlArray['encoding'] ?? 'UTF-8') . '" ?><' . $xmlArray['containerTag'] . '></' . $xmlArray['containerTag'] . '>');
@@ -23,6 +37,15 @@ class ArrayToXMLElement implements IArrayToXML
 		return (is_null($fileName)) ? $xml->asXML() : $xml->asXML($fileName);
 	}
 	
+	/**
+	 * Recursive function that forms the xml structure and assigns unique and common attr-value pairs to tags
+	 *
+	 * @author nikola.tsenov
+	 * @param \SimpleXMLElement $parent
+	 * @param array $xmlStructureArray
+	 * @param array $commonTags
+	 * @param string $encoding
+	 */
 	protected static function createXmlStructure(\SimpleXMLElement $parent, $xmlStructureArray, $commonTags, $encoding)
 	{
 		foreach ($xmlStructureArray AS $tagName => $tagValue) {
@@ -60,6 +83,13 @@ class ArrayToXMLElement implements IArrayToXML
 		}
 	}
 	
+	/**
+	 * @author nikola.tsenov
+	 * @param string $tagName
+	 * @param string $encoding
+	 * @throws ArrayToXMLException
+	 * @return array
+	 */
 	private static function prepareAttrValuePairs($tagName, $encoding)
 	{
 		if (mb_strpos($tagName, '(', 0, $encoding) === false) {
@@ -91,6 +121,13 @@ class ArrayToXMLElement implements IArrayToXML
 		}
 	}
 	
+	/**
+	 * @author nikola.tsenov
+	 * @param array $xmlArray (see noAttributesExampleArray.php in folder examples)
+	 * @param string $fileName
+	 * @throws ArrayToXMLException
+	 * @return string
+	 */
 	public static function exportToXMLWithoutAttributes($xmlArray, $fileName = null)
 	{
 		$xml = new \SimpleXMLElement('<?xml version="' . ($xmlArray['version'] ?? '1.0') . '" encoding="' . ($xmlArray['encoding'] ?? 'UTF-8') . '" ?><' . $xmlArray['containerTag'] . '></' . $xmlArray['containerTag'] . '>');
@@ -104,6 +141,13 @@ class ArrayToXMLElement implements IArrayToXML
 		return (is_null($fileName)) ? $xml->asXML() : $xml->asXML($fileName);
 	}
 	
+	/**
+	 * Recursive function that forms the xml structure (no attr-value pairs to tags)
+	 *
+	 * @author nikola.tsenov
+	 * @param \SimpleXMLElement $parent
+	 * @param array $xmlStructureArray
+	 */
 	protected static function createXmlStructureWithoutAttributes(\SimpleXMLElement $parent, $xmlStructureArray)
 	{
 		foreach ($xmlStructureArray AS $tagName => $tagValue) {
@@ -122,6 +166,13 @@ class ArrayToXMLElement implements IArrayToXML
 		}
 	}
 	
+	/**
+	 * @author nikola.tsenov
+	 * @param array $xmlArray (see separatelyDeclaredAttrValuesExampleArray.php in folder examples)
+	 * @param string $fileName
+	 * @throws ArrayToXMLException
+	 * @return string
+	 */
 	public static function exportToXMLWithNonUniqueAttributes($xmlArray, $fileName = null)
 	{
 		$xml = new \SimpleXMLElement('<?xml version="' . ($xmlArray['version'] ?? '1.0') . '" encoding="' . ($xmlArray['encoding'] ?? 'UTF-8') . '" ?><' . $xmlArray['containerTag'] . '></' . $xmlArray['containerTag'] . '>');
@@ -138,6 +189,14 @@ class ArrayToXMLElement implements IArrayToXML
 		return (is_null($fileName)) ? $xml->asXML() : $xml->asXML($fileName);
 	}
 	
+	/**
+	 * Recursive function that forms the xml structure and assigns to tags all separately declared(in commonTagAttributes key) attr-value pairs
+	 *
+	 * @author nikola.tsenov
+	 * @param \SimpleXMLElement $parent
+	 * @param array $xmlStructureArray
+	 * @param array $commonTags
+	 */
 	protected static function createXMLStructureWithNonUniqueAttributes(\SimpleXMLElement $parent, $xmlStructureArray, $commonTags)
 	{
 		foreach ($xmlStructureArray AS $tagName => $tagValue) {
@@ -169,6 +228,12 @@ class ArrayToXMLElement implements IArrayToXML
 		}
 	}
 	
+	/**
+	 * @author nikola.tsenov
+	 * @param array $attrValueArray
+	 * @param \SimpleXMLElement $tag
+	 * @return boolean
+	 */
 	private static function setAttributeValue($attrValueArray, \SimpleXMLElement $tag)
 	{
 		$count = 0;
