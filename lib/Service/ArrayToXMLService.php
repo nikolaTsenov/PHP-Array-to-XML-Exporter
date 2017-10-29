@@ -19,6 +19,13 @@ use Exception\ArrayToXMLException;
  */
 class ArrayToXMLService implements IArrayToXMLInterface
 {
+	/**
+	 * @author nikola.tsenov
+	 * @param array $xmlArray (see exmpleArray.php in folder examples)
+	 * @param string $fileName
+	 * @throws ArrayToXMLException
+	 * @return string
+	 */
 	public static function exportToXML($xmlArray, $fileName = null)
 	{
 		$version = $xmlArray['version'] ?? '1.0';
@@ -37,6 +44,16 @@ class ArrayToXMLService implements IArrayToXMLInterface
 		return $xml->saveXML($fileName);
 	}
 	
+	/**
+	 * Recursive function that forms the xml structure and assigns unique and common attr-value pairs to tags
+	 * 
+	 * @author nikola.tsenov
+	 * @param object $parent
+	 * @param \DOMDocument $xml
+	 * @param array $xmlStructureArray
+	 * @param array $commonTags
+	 * @param string $encoding
+	 */
 	protected static function createXmlStructure($parent, \DOMDocument $xml, $xmlStructureArray, $commonTags, $encoding)
 	{
 		foreach ($xmlStructureArray AS $tagName => $tagValue) {
@@ -60,14 +77,23 @@ class ArrayToXMLService implements IArrayToXMLInterface
 			} else {
 				//middle tag
 				if (! is_numeric($tagName)) {
+					//self call, $newTag is now parent
 					self::createXmlStructure($newTag, $xml, $tagValue, $commonTags, $encoding);
 				} else {
+					//self call with the same parent
 					self::createXmlStructure($parent, $xml, $tagValue, $commonTags, $encoding);
 				}
 			}
 		}
 	}
 	
+	/**
+	 * @author nikola.tsenov
+	 * @param string $tagName
+	 * @param string $encoding
+	 * @throws ArrayToXMLException
+	 * @return array
+	 */
 	private static function prepareAttrValuePairs($tagName, $encoding)
 	{
 		if (mb_strpos($tagName, '(', 0, $encoding) === false) {
@@ -86,7 +112,7 @@ class ArrayToXMLService implements IArrayToXMLInterface
 				$pairArray = explode(':', $pair);
 				
 				if (count($pairArray) != 2) {
-					throw new ArrayToXMLException('Bad Attribute-Value construction, follow pattern(attr1:val1;attr2:val2)!');
+					throw new ArrayToXMLException('Incorrect Attribute-Value construction, follow pattern(attr1:val1;attr2:val2)!');
 				}
 				
 				$uniquePairs[$pairArray[0]] = $pairArray[1];
@@ -99,6 +125,13 @@ class ArrayToXMLService implements IArrayToXMLInterface
 		}
 	}
 	
+	/**
+	 * @author nikola.tsenov
+	 * @param array $xmlArray (see noAttributesExampleArray.php in folder examples)
+	 * @param string $fileName
+	 * @throws ArrayToXMLException
+	 * @return string
+	 */
 	public static function exportToXMLWithoutAttributes($xmlArray, $fileName = null)
 	{
 		$version = $xmlArray['version'] ?? '1.0';
@@ -117,6 +150,14 @@ class ArrayToXMLService implements IArrayToXMLInterface
 		return $xml->saveXML($fileName);
 	}
 	
+	/**
+	 * Recursive function that forms the xml structure (no attr-value pairs to tags)
+	 * 
+	 * @author nikola.tsenov
+	 * @param object $parent
+	 * @param \DOMDocument $xml
+	 * @param array $xmlStructureArray
+	 */
 	protected static function createXmlStructureWithoutAttributes($parent, \DOMDocument $xml, $xmlStructureArray)
 	{
 		foreach ($xmlStructureArray AS $tagName => $tagValue) {
@@ -138,6 +179,13 @@ class ArrayToXMLService implements IArrayToXMLInterface
 		}
 	}
 	
+	/**
+	 * @author nikola.tsenov
+	 * @param array $xmlArray (see separatelyDeclaredAttrValuesExampleArray.php in folder examples)
+	 * @param string $fileName
+	 * @throws ArrayToXMLException
+	 * @return string
+	 */
 	public static function exportToXMLWithNonUniqueAttributes($xmlArray, $fileName = null)
 	{
 		$version = $xmlArray['version'] ?? '1.0';
@@ -159,6 +207,15 @@ class ArrayToXMLService implements IArrayToXMLInterface
 		return $xml->saveXML($fileName);
 	}
 	
+	/**
+	 * Recursive function that forms the xml structure and assigns to tags all separately declared(in commonTagAttributes key) attr-value pairs
+	 * 
+	 * @author nikola.tsenov
+	 * @param object $parent
+	 * @param \DOMDocument $xml
+	 * @param array $xmlStructureArray
+	 * @param array $commonTags
+	 */
 	protected static function createXMLStructureWithNonUniqueAttributes($parent, \DOMDocument $xml, $xmlStructureArray, $commonTags)
 	{
 		foreach ($xmlStructureArray AS $tagName => $tagValue) {
@@ -183,6 +240,12 @@ class ArrayToXMLService implements IArrayToXMLInterface
 		}
 	}
 	
+	/**
+	 * @author nikola.tsenov
+	 * @param array $attrValueArray
+	 * @param \DOMElement $tag
+	 * @return boolean
+	 */
 	private static function setAttributeValue($attrValueArray, \DOMElement $tag)
 	{
 		$count = 0;

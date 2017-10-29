@@ -6,6 +6,7 @@ $xmlArray = [
 		'encoding' => 'utf-8',
 		//all xml tree construction is in key 'tags'
 		'tags' => [
+			'details' => [
 				'meeting' => [
 						'notes' => 'Be exact!',
 						'date' => 'YYYY-MM-DD',
@@ -23,6 +24,7 @@ $xmlArray = [
 								'position' => 'Lawyer'
 						]
 				]
+			]
 		],
 		//put here all common xml attributes with their values, you can leave 'commonTagAttributes' key empty
 		'commonTagAttributes' => [
