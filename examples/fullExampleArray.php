@@ -1,12 +1,19 @@
 <?php
 $xmlArray = [
+	//'containerTag' is required for SimpleXmlElementBased Class
+	'containerTag' => 'data',
+	//'containerTagAttributes' is an addition to 'containerTag' and is not obligatory
+	'containerTagAttributes' => [
+		'version' => '2.0',
+		'info' => 'curriculum'
+	],
 	//'version' not obligatory key (has default value '1.0')
 	'version' => '1.0',
 	//'encoding' not obligatory key (has default value 'utf-8')
 	'encoding' => 'utf-8',
 	//all xml tree construction is in key 'tags'
 	'tags' => [
-		'meeting' => [
+		'meeting(importance:high)' => [
 			'notes' => 'Be exact!',
 			'date' => 'YYYY-MM-DD',
 			'tips' => "Don't forget to smile",

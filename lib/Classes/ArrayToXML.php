@@ -60,7 +60,7 @@ class ArrayToXML implements IArrayToXML
 				$newTag = $parent->appendChild($newTag);
 				
 				//set common attribute value pairs
-				self::setAttributeValue(($commonTags[$tagName] ?? null), $newTag);
+				self::setAttributeValue(($commonTags[$uniqueAttrValPairs['tagName']] ?? null), $newTag);
 				
 				//set unique attribute value pairs
 				self::setAttributeValue(($uniqueAttrValPairs['uniquePairs'] ?? null), $newTag);
@@ -217,7 +217,7 @@ class ArrayToXML implements IArrayToXML
 				$newTag = $xml->createElement($tagName);
 				$newTag = $parent->appendChild($newTag);
 				
-				//set common tags
+				//set attributes
 				self::setAttributeValue(($commonTags[$tagName] ?? null), $newTag);
 			}
 			if (! is_array($tagValue)) {
